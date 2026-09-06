@@ -1,0 +1,11 @@
+{
+  "name": "ds_telecom_sqlserver",
+  "properties": {
+    "type": "AzureSqlTable",
+    "parameters": {
+      "tableName": {
+        "type": "String"
+      }
+    }
+  }
+}
