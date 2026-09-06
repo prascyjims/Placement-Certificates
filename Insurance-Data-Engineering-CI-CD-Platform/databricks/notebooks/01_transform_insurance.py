@@ -1,0 +1,10 @@
+from pyspark.sql import functions as F
+customers=spark.read.option("header",True).csv("/mnt/insurance/raw/customers.csv")
+policies=spark.read.option("header",True).csv("/mnt/insurance/raw/policies.csv")
+claims=spark.read.option("header",True).csv("/mnt/insurance/raw/claims.csv")
+customers_clean=customers.dropDuplicates(["customer_id"]).filter(F.col("policy_type").isin("Health","Auto","Life")).filter(F.col("city").isNotNull())
+policies_clean=policies.withColumn("coverage_amount",F.col("coverage_amount").cast("double")).filter(F.col("coverage_amount")>0).filter(F.col("policy_start_date").isNotNull())
+claims_clean=claims.withColumn("claim_amount",F.col("claim_amount").cast("double")).filter(F.col("claim_amount")>0).filter(F.col("claim_date").isNotNull()).dropDuplicates(["claim_id"])
+gold=claims_clean.join(policies_clean.select("policy_id","customer_id"),"policy_id","inner").join(customers_clean,"customer_id","inner")
+gold=gold.withColumn("claim_risk",F.when(F.col("claim_amount")>15000,"High").otherwise("Normal"))
+gold.write.format("delta").mode("overwrite").save("/mnt/insurance/gold/claims")
