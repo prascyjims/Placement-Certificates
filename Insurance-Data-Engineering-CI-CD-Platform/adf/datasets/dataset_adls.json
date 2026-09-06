@@ -1,0 +1,14 @@
+{
+  "name": "dataset_adls",
+  "properties": {
+    "type": "AzureBlobFSFile",
+    "parameters": {
+      "tableName": {
+        "type": "String"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    }
+  }
+}

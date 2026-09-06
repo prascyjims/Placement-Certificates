@@ -1,0 +1,14 @@
+{
+  "name": "dataset_sql",
+  "properties": {
+    "type": "AzureSqlTable",
+    "parameters": {
+      "tableName": {
+        "type": "String"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    }
+  }
+}
