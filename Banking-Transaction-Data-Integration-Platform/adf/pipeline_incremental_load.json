@@ -1,0 +1,199 @@
+{
+  "name": "pl_banking_incremental_load",
+  "properties": {
+    "parameters": {
+      "sourceFolder": {
+        "type": "String",
+        "defaultValue": "banking"
+      },
+      "watermarkDate": {
+        "type": "String",
+        "defaultValue": "2026-08-07"
+      }
+    },
+    "activities": [
+      {
+        "name": "Lookup_Watermark",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT MAX(transaction_date) AS watermarkDate FROM loaded_transactions"
+          }
+        },
+        "policy": {
+          "timeout": "0.00:10:00",
+          "retry": 1
+        },
+        "userProperties": [
+          {
+            "name": "Purpose",
+            "value": "Read last successful transaction date"
+          }
+        ]
+      },
+      {
+        "name": "ForEach_Source",
+        "type": "ForEach",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Watermark",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "items": {
+            "value": "@array('customers','accounts','transactions')",
+            "type": "Expression"
+          },
+          "isSequential": true,
+          "activities": [
+            {
+              "name": "Copy_SQLServer_to_ADLS",
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "AzureSqlSource",
+                  "sqlReaderQuery": "SELECT * FROM @{item()} WHERE transaction_date > '@{pipeline().parameters.watermarkDate}'"
+                },
+                "sink": {
+                  "type": "AzureBlobFSSink"
+                }
+              },
+              "inputs": [
+                {
+                  "referenceName": "ds_banking_sqlserver",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "tableName": {
+                      "value": "@item()",
+                      "type": "Expression"
+                    }
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "referenceName": "ds_banking_adls",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "folderPath": {
+                      "value": "@pipeline().parameters.sourceFolder",
+                      "type": "Expression"
+                    },
+                    "fileName": {
+                      "value": "@concat(item(),'.csv')",
+                      "type": "Expression"
+                    }
+                  }
+                }
+              ],
+              "policy": {
+                "timeout": "0.02:00:00",
+                "retry": 1
+              }
+            },
+            {
+              "name": "Log_Copy_Failure",
+              "type": "Web",
+              "dependsOn": [
+                {
+                  "activity": "Copy_SQLServer_to_ADLS",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "url": "https://example.invalid/log-failure",
+                "method": "POST",
+                "body": "Copy activity failed for @{item()}"
+              },
+              "userProperties": [
+                {
+                  "name": "Purpose",
+                  "value": "Basic failure logging"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "Copy_CSV_to_ADLS",
+        "type": "Copy",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Watermark",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "DelimitedTextSource"
+          },
+          "sink": {
+            "type": "AzureBlobFSSink"
+          }
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_banking_csv",
+            "type": "DatasetReference",
+            "parameters": {
+              "fileName": "@pipeline().parameters.sourceFolder"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_banking_adls",
+            "type": "DatasetReference",
+            "parameters": {
+              "folderPath": "csv",
+              "fileName": "source.csv"
+            }
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 1
+        }
+      },
+      {
+        "name": "Verify_Load",
+        "type": "Lookup",
+        "dependsOn": [
+          {
+            "activity": "ForEach_Source",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Copy_CSV_to_ADLS",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT COUNT(*) AS loaded_transaction_count FROM loaded_transactions"
+          }
+        },
+        "userProperties": [
+          {
+            "name": "Purpose",
+            "value": "Verify successful data movement"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "ds_banking_sqlserver",
+  "properties": {
+    "type": "AzureSqlTable",
+    "parameters": {
+      "tableName": {
+        "type": "String"
+      }
+    },
+    "linkedServiceName": {
+      "referenceName": "ls_sqlserver",
+      "type": "LinkedServiceReference"
+    },
+    "typeProperties": {
+      "tableName": {
+        "value": "@dataset().tableName",
+        "type": "Expression"
+      }
+    }
+  }
+}

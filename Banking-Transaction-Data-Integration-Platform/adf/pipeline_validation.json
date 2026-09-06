@@ -1,0 +1,65 @@
+{
+  "name": "pl_banking_source_to_target_validation",
+  "properties": {
+    "activities": [
+      {
+        "name": "Lookup_Source_Count",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT COUNT(*) AS source_count FROM transactions"
+          }
+        }
+      },
+      {
+        "name": "Lookup_Target_Count",
+        "type": "Lookup",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Source_Count",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT COUNT(*) AS target_count FROM loaded_transactions"
+          }
+        }
+      },
+      {
+        "name": "Validate_Counts",
+        "type": "IfCondition",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Target_Count",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@equals(activity('Lookup_Source_Count').output.firstRow.source_count,activity('Lookup_Target_Count').output.firstRow.target_count)",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [],
+          "ifFalseActivities": [
+            {
+              "name": "Log_Validation_Failure",
+              "type": "Web",
+              "typeProperties": {
+                "url": "https://example.invalid/log-validation",
+                "method": "POST",
+                "body": "Source-to-target count mismatch"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

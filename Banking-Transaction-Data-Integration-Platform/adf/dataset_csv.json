@@ -1,0 +1,23 @@
+{
+  "name": "ds_banking_csv",
+  "properties": {
+    "type": "DelimitedText",
+    "parameters": {
+      "fileName": {
+        "type": "String"
+      }
+    },
+    "linkedServiceName": {
+      "referenceName": "ls_csv_source",
+      "type": "LinkedServiceReference"
+    },
+    "typeProperties": {
+      "location": {
+        "fileName": {
+          "value": "@dataset().fileName",
+          "type": "Expression"
+        }
+      }
+    }
+  }
+}

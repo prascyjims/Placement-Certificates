@@ -1,0 +1,30 @@
+{
+  "name": "ds_banking_adls",
+  "properties": {
+    "type": "AzureBlobFSFile",
+    "parameters": {
+      "folderPath": {
+        "type": "String"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    },
+    "linkedServiceName": {
+      "referenceName": "ls_adls_gen2",
+      "type": "LinkedServiceReference"
+    },
+    "typeProperties": {
+      "location": {
+        "folderPath": {
+          "value": "@dataset().folderPath",
+          "type": "Expression"
+        },
+        "fileName": {
+          "value": "@dataset().fileName",
+          "type": "Expression"
+        }
+      }
+    }
+  }
+}
