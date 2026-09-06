@@ -1,0 +1,33 @@
+{
+  "name": "job_telecom_customer_pipeline",
+  "tasks": [
+    {
+      "task_key": "bronze_ingestion",
+      "notebook_task": {
+        "notebook_path": "/Telecom/01_bronze_ingestion"
+      }
+    },
+    {
+      "task_key": "silver_processing",
+      "depends_on": [
+        {
+          "task_key": "bronze_ingestion"
+        }
+      ],
+      "notebook_task": {
+        "notebook_path": "/Telecom/02_silver_cleaning"
+      }
+    },
+    {
+      "task_key": "gold_scd_processing",
+      "depends_on": [
+        {
+          "task_key": "silver_processing"
+        }
+      ],
+      "notebook_task": {
+        "notebook_path": "/Telecom/03_gold_and_scd"
+      }
+    }
+  ]
+}
