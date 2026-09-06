@@ -1,0 +1,14 @@
+customer_id,customer_name,plan_name,city
+101,Rahul,Basic,Hyderabad
+102,Priya,Premium,Bengaluru
+103,Arjun,Basic,Chennai
+104,Sneha,Premium,Mumbai
+105,Kiran,Basic,Pune
+106,Neha,Premium,Delhi
+107,Vikram,Basic,Kolkata
+108,Anjali,Premium,Ahmedabad
+105,Kiran,Basic,Pune
+105,Kiran,Basic,Pune
+109,Ravi,,Jaipur
+110,Meena,Premium,
+111,Suresh,Unknown,Chennai
