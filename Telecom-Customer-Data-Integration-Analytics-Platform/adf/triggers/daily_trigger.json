@@ -1,0 +1,20 @@
+{
+  "name": "trg_telecom_daily_ingestion",
+  "properties": {
+    "type": "ScheduleTrigger",
+    "typeProperties": {
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1
+      }
+    },
+    "pipelines": [
+      {
+        "pipelineReference": {
+          "referenceName": "pl_telecom_incremental_ingestion",
+          "type": "PipelineReference"
+        }
+      }
+    ]
+  }
+}
