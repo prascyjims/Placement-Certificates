@@ -1,0 +1,62 @@
+{
+  "name": "pl_insurance_ingestion",
+  "properties": {
+    "parameters": {
+      "watermarkDate": {
+        "type": "String",
+        "defaultValue": "2026-06-20"
+      }
+    },
+    "activities": [
+      {
+        "name": "Lookup_Watermark",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT MAX(claim_date) AS watermarkDate FROM target_claims"
+          }
+        }
+      },
+      {
+        "name": "Copy_SQL_to_ADLS",
+        "type": "Copy",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Watermark",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SourceDataset"
+          },
+          "sink": {
+            "type": "AzureBlobFSSink"
+          },
+          "watermark": "@pipeline().parameters.watermarkDate"
+        }
+      },
+      {
+        "name": "Validate_Load",
+        "type": "Lookup",
+        "dependsOn": [
+          {
+            "activity": "Copy_SQL_to_ADLS",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT COUNT(*) AS loaded_rows FROM target_claims"
+          }
+        }
+      }
+    ]
+  }
+}
