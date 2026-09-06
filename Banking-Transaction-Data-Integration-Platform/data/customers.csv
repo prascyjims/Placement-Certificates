@@ -1,0 +1,7 @@
+customer_id,customer_name,email,city
+1001,Aarav Mehta,aarav@example.com,Mumbai
+1002,Priya Nair,,Bengaluru
+1003,Rohan Das,rohan@example.com,Hyderabad
+1004,Sneha Rao,,Chennai
+1005,Vikram Shah,vikram@example.com,Pune
+1006,Neha Singh,,Delhi
