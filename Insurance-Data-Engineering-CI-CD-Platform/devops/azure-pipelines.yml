@@ -1,0 +1,20 @@
+trigger:
+- main
+stages:
+- stage: Validate
+  jobs:
+  - job: ValidateArtifacts
+    steps:
+    - script: echo "Validate SQL, ADF and Databricks artifacts"
+- stage: Deploy_Dev
+  dependsOn: Validate
+  jobs:
+  - job: DeployDev
+    steps:
+    - script: echo "Deploy SQL scripts, ADF pipelines and Databricks notebooks to Development"
+- stage: Deploy_Prod
+  dependsOn: Deploy_Dev
+  jobs:
+  - job: DeployProd
+    steps:
+    - script: echo "Deploy approved artifacts to Production using environment-specific parameters"

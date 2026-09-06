@@ -1,0 +1,10 @@
+{
+  "development": {
+    "adls_container": "insurance-dev",
+    "sql_database": "InsuranceDev"
+  },
+  "production": {
+    "adls_container": "insurance-prod",
+    "sql_database": "InsuranceProd"
+  }
+}
